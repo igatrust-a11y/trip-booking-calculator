@@ -8,6 +8,7 @@ from booking import (
     calculate_tax,
     get_price_category,
     format_booking_summary,
+    calculate_final_price,
 )
 
 
@@ -85,3 +86,50 @@ def test_calculate_tax_unknown_country_raises():
     """Unknown country must raise ValueError."""
     with pytest.raises(ValueError):
         calculate_tax(500, "mars")
+
+
+# ── Tests for calculate_final_price ───────────────────────────────────────────
+
+def test_calculate_final_price_happy_path():
+    """Complete flow: $100/night × 2 nights × 2 guests = $400 base,
+    no discount in June, plus 10% tax in Japan = $400 + $40 = $440."""
+    result = calculate_final_price(100, 2, 2, 6, "japan")
+    assert result == 440.0
+
+
+def test_calculate_final_price_with_discount():
+    """January has 15% discount: $100/night × 3 nights × 1 guest = $300,
+    minus 15% = $255, plus 20% tax in France = $255 + $51 = $306."""
+    result = calculate_final_price(100, 3, 1, 1, "france")
+    assert result == 306.0
+
+
+def test_calculate_final_price_november_discount():
+    """November has 10% discount: $200/night × 2 nights × 2 guests = $800,
+    minus 10% = $720, plus 8% tax in USA = $720 + $57.6 = $777.6."""
+    result = calculate_final_price(200, 2, 2, 11, "usa")
+    assert result == 777.6
+
+
+def test_calculate_final_price_invalid_nights():
+    """Zero nights must raise ValueError."""
+    with pytest.raises(ValueError):
+        calculate_final_price(100, 0, 2, 6, "france")
+
+
+def test_calculate_final_price_invalid_guests():
+    """Zero guests must raise ValueError."""
+    with pytest.raises(ValueError):
+        calculate_final_price(100, 2, 0, 6, "france")
+
+
+def test_calculate_final_price_invalid_month():
+    """Month 13 must raise ValueError."""
+    with pytest.raises(ValueError):
+        calculate_final_price(100, 2, 2, 13, "france")
+
+
+def test_calculate_final_price_invalid_country():
+    """Unsupported country must raise ValueError."""
+    with pytest.raises(ValueError):
+        calculate_final_price(100, 2, 2, 6, "invalid")

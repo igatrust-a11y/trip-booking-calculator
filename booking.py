@@ -110,6 +110,30 @@ def get_price_category(total_price: float) -> str:
         return "luxury"
 
 
+def calculate_final_price(base_price: float, nights: int, guests: int,
+                           month: int, country: str) -> float:
+    """Calculate the complete final price including discount and tax in one step.
+
+    Args:
+        base_price: Nightly rate per person in USD.
+        nights: Number of nights to stay.
+        guests: Number of guests.
+        month: Month of travel as an integer (1=January, 12=December).
+        country: Country name in lowercase (e.g. 'france', 'japan').
+
+    Returns:
+        Final price as a float (base price adjusted for discount, plus tax).
+
+    Raises:
+        ValueError: If nights or guests is zero or less, month is not between
+                    1 and 12, or country is not supported.
+    """
+    total = calculate_total_price(base_price, nights, guests)
+    discounted = apply_seasonal_discount(total, month)
+    tax = calculate_tax(discounted, country)
+    return round(discounted + tax, 2)
+
+
 def format_booking_summary(trip_name: str, destination: str,
                             total_price: float, guests: int) -> str:
     """Format a human-readable booking summary string.
